@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — CIVICSENSE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --purple: #6d42ed;
+    --yellow: #eee642;
+    --dark: #121212;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.55);
+    --green: #42ed91;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--purple);
+  }
+
+  .logo {
+    font-weight: 900;
+    font-size: 1.2rem;
+    letter-spacing: -0.03em;
+    color: #111;
+    text-decoration: none;
+    background: var(--yellow);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .nav-links a:hover { color: #fff; }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-actions a {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .btn-signup {
+    background: #fff;
+    color: #111 !important;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+
+  .title {
+    font-weight: 900;
+    font-size: clamp(2.8rem, 9vw, 4rem);
+    letter-spacing: -0.04em;
+    text-align: center;
+    line-height: 0.95;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  label .req { color: #ff6b6b; }
+
+  .input-wrap { position: relative; }
+
+  input {
+    width: 100%;
+    background: #0e0e0e;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(109,66,237,0.25);
+  }
+
+  input::placeholder { color: #444; }
+
+  .icon-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+  }
+
+  .icon-btn:hover { color: #fff; }
+
+  .forgot {
+    text-align: right;
+    margin-top: -8px;
+  }
+
+  .forgot a {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .forgot a:hover { color: #fff; text-decoration: underline; }
+
+  .submit-btn {
+    margin-top: 12px;
+    align-self: center;
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 40px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+  }
+
+  .submit-btn:hover {
+    background: #eee;
+    transform: translateY(-1px);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .switch {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .switch a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .msg {
+    text-align: center;
+    font-size: 0.85rem;
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 10px;
+    display: none;
+  }
+
+  .msg.success {
+    display: block;
+    background: rgba(66,237,145,0.15);
+    color: var(--green);
+    border: 1px solid rgba(66,237,145,0.3);
+  }
+
+  .msg.error {
+    display: block;
+    background: rgba(255,80,80,0.12);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,80,80,0.25);
+  }
+
+  .footer-teaser {
+    margin-top: 80px;
+    text-align: center;
+    padding-bottom: 40px;
+  }
+
+  .footer-teaser .eyebrow {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .footer-teaser .big-logo {
+    font-weight: 900;
+    font-size: clamp(2.8rem, 9vw, 4.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .footer-teaser p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 340px;
+    margin: 0 auto 24px;
+    line-height: 1.5;
+  }
+
+  .footer-teaser .btn-outline {
+    display: inline-block;
+    border: 1.5px solid #444;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .footer-teaser .btn-outline:hover { border-color: #fff; }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <nav class="nav">
+    <a href="index.html" class="logo">CIVICSENSE</a>
+    <ul class="nav-links">
+      <li><a href="social.html">SOCIAL</a></li>
+      <li><a href="index.html#gallery">GALLERY</a></li>
+      <li><a href="index.html#directory">DIRECTORY</a></li>
+      <li><a href="index.html#pricing">PRICING</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="login.html">LOGIN</a>
+      <a href="signup.html" class="btn-signup">SIGN UP →</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <h1 class="title">LOG IN</h1>
+
+    <form id="login-form">
+      <div class="field">
+        <label>EMAIL <span class="req">*</span></label>
+        <input type="email" name="email" required autocomplete="email" placeholder="">
+      </div>
+
+      <div class="field">
+        <label>PASSWORD <span class="req">*</span></label>
+        <div class="input-wrap">
+          <input type="password" name="password" id="password" required minlength="6" autocomplete="current-password" placeholder="">
+          <button type="button" class="icon-btn" id="toggle-pass" title="Show password">👁</button>
+        </div>
+      </div>
+
+      <div class="forgot">
+        <a href="#" id="forgot-link">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">LOG IN →</button>
+    </form>
+
+    <div id="msg" class="msg"></div>
+
+    <p class="switch">
+      Don’t have an account?
+      <a href="signup.html">Sign up</a>
+      ·
+      <a href="business-signup.html">Business sign up</a>
+    </p>
+  </main>
+
+  <div class="footer-teaser">
+    <p class="eyebrow">A Social Network for Everyday Good</p>
+    <div class="big-logo">CIVICSENSE</div>
+    <p>Join for free and hang with people who do good on the internet.</p>
+    <a href="signup.html" class="btn-outline">Make Your Profile ↑</a>
+  </div>
+
+<script>
+  // ========== SUPABASE CONFIG ==========
+  // Replace with your project values from https://supabase.com/dashboard → Project Settings → API
+  const SUPABASE_URL = 'https://upmlijvwbzctaglsrcfu.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwbWxpanZ3YnpjdGFnbHNyY2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjA1NDcsImV4cCI6MjEwNjM5NjU0N30.-hIK_WXzbbW55WQ5KrWZPiHRQwhpE9850VCHbmr8PcM';
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('toggle-pass').addEventListener('click', () => {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+
+  const form = document.getElementById('login-form');
+  const msgEl = document.getElementById('msg');
+  const btn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msgEl.className = 'msg';
+    msgEl.textContent = '';
+
+    const fd = new FormData(form);
+    const email = fd.get('email').trim();
+    const password = fd.get('password');
+
+    btn.disabled = true;
+    btn.textContent = 'LOGGING IN…';
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      showSuccess('Welcome back! Redirecting…');
+      setTimeout(() => {
+        window.location.href = 'social.html';
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      showError(err.message || 'Login failed. Check your email and password.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'LOG IN →';
+    }
+  });
+
+  document.getElementById('forgot-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = form.elements.email.value.trim();
+    if (!email) {
+      showError('Enter your email above, then click Forgot password.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/login.html'
+      });
+      if (error) throw error;
+      showSuccess('Password reset email sent. Check your inbox.');
+    } catch (err) {
+      showError(err.message || 'Could not send reset email.');
+    }
+  });
+
+  function showError(text) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = text;
+  }
+  function showSuccess(text) {
+    msgEl.className = 'msg success';
+    msgEl.textContent = text;
+  }
+</script>
+</body>
+</html>
